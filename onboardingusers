@@ -1,0 +1,57 @@
+# auxillary-projects
+# This script is written to automate adding new user on a Linux server using ssh command, with each user to be added to an existing group called developers, and having a default home folder 
+# The new user is to have .ssh and authorized_keys in their home folder 
+# The script will also check if the user exists before creating it.
+# The script will read in usernames from a CSV file named users.csv
+# inside the Shell directory, user.csv was created
+
+#!/bin/bash
+newuser=$(cat users.csv)
+# Going through the new user list
+    if [ $(id -u) -eq 0 ]; then
+
+# Reading the CSV file
+	for name in $newuser; do
+        	echo $name
+        	if id "$name" &>/dev/null
+        	then
+            		echo "user exist"
+        	else
+# create the user
+        useradd -m -d /home/$name -s /bin/bash -g developers $name
+        echo "new user created"
+        echo
+
+# Create a ssh folder in user home folder
+        su - -c "mkdir ~/.ssh" $name
+        echo ".ssh directory created for new user"
+        echo
+
+# change user permission on the .ssh directory
+         su - -c "chmod 700 ~/.ssh" $name
+         echo "user permission for .ssh directory done"
+         echo
+
+# Create an authorized-keys file
+        su - -c "touch ~/.ssh/authorized_keys" $name
+        echo "authorized_keys file created"
+        echo
+
+# Setting permission for the authorized_keys file
+        su - -c "chmod 600 ~/.ssh/authorized_keys" $name
+        echo "user permission for the authorized-keys file done"
+        echo
+
+# Creating and setting public key for users in the server
+        cp -R "/home/oladiti/.ssh/id_rsa.pub" "/home/$name/.ssh/authorized_keys"
+        echo "Copying public key to newuser account on the server"
+        echo
+
+# Change owner on the authorized key file
+            sudo chown $name:$name /home/$name/.ssh/authorized_keys
+            echo "Complete"
+            fi
+        done
+    else
+    echo "Only root may add a user to the system"
+    fi
