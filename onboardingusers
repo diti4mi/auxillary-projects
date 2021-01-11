@@ -48,7 +48,7 @@ newuser=$(cat users.csv)
         echo
 
 # Change owner on the authorized key file
-            sudo chown $name:$name /home/$name/.ssh/authorized_keys
+            sudo chown $name /home/$name/.ssh/authorized_keys
             echo "Complete"
             fi
         done
